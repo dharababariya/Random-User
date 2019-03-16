@@ -1,7 +1,10 @@
 const request = require('request');
 const pagination = require('pagination');
 
+
 module.exports = function (app) {
+
+    //get user
     app.get('/', (req, res) => {
 
         request('https://randomuser.me/api/', function (error, response, body) {
@@ -12,9 +15,9 @@ module.exports = function (app) {
             }
         })
     })
-
+    //paginations
     app.get('/paginations', (req, res) => {
-       request('https://randomuser.me/api/', function (error, response, body) {
+        request('https://randomuser.me/api/', function (error, response, body) {
 
             const paginator = pagination.create('search', {
                 prelink: '/',
@@ -26,7 +29,15 @@ module.exports = function (app) {
             console.log(paginator.render());
         })
     })
+    //sorting
 
+    app.get('/sorting', (req, res) => {
+        request('https://randomuser.me/api/', function (error, response, body) {
+            
+
+        })
+        
+    })
     
 
 }
