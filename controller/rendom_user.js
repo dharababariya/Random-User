@@ -1,43 +1,63 @@
 const request = require('request');
-const pagination = require('pagination');
-
+const rp = require('request-promise-native');
 
 module.exports = function (app) {
 
-    //get user
-    app.get('/', (req, res) => {
+    app.get('/api/randomusers', (req, res, next) => {
 
-        request('https://randomuser.me/api/', function (error, response, body) {
+        // console.log(`req params ${JSON.stringify(req.query)}`);
 
-            if (!error && response.statusCode == 200) {
+        const options = {
+            uri: 'https://randomuser.me/api/',
+            qs: {
+                results: req.query.count,
+                page: req.query.page,
+                nat: 'us'
+            },
+            headers: {
+                'User-Agent': 'Request-Promise'
+            },
+            json: true // Automatically parses the JSON string in the response
+        };
 
-                return res.send(body);
-            }
+        rp(options).then(function (repos) {
+
+            console.log('User has %d repos', repos.length);
+
+            return res
+                .status(200)
+                .send({
+                    status: 'SUCCESS',
+                    data: sortCollection(repos.results, 'email')
+                });
+
         })
-    })
-    //paginations
-    app.get('/paginations', (req, res) => {
-        request('https://randomuser.me/api/', function (error, response, body) {
+            .catch(function (err) {
 
-            const paginator = pagination.create('search', {
-                prelink: '/',
-                current: 1,
-                rowsPerPage: 10,
-                totalResult: 100
+                // console.error(err.message); API call failed...
+                return res
+                    .status(500)
+                    .send({status: 'FAILURE'});
+
             });
-            res.send(paginator.render());
-            console.log(paginator.render());
-        })
+
     })
-    //sorting
 
-    app.get('/sorting', (req, res) => {
-        request('https://randomuser.me/api/', function (error, response, body) {
-            
+}
 
-        })
-        
+const sortCollection = (data, sort_by) => {
+
+    return data.sort(function (a, b) {
+        var nameA = a[sort_by].toUpperCase(); // ignore upper and lowercase
+        var nameB = b[sort_by].toUpperCase(); // ignore upper and lowercase
+        if (nameA < nameB) {
+            return -1;
+        }
+        if (nameA > nameB) {
+            return 1;
+        }
+
+        // names must be equal
+        return 0;
     })
-    
-
 }
